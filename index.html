@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+
+</head>
+
+<body>
+
+<h1>180 Day Journey</h1>
+
+<div id="count">
+Completed: 0/180
+</div>
+
+<div id="days"></div>
+
+<script>
+
+const TOTAL_DAYS=180;
+
+const supabase=
+window.supabase.createClient(
+
+"https://awvasbfxppalxqrnryad.supabase.co",
+"sb_publishable_Hg8Z9sY2g6cZI0-UlvQQDA_bv1iVw4p"
+
+);
+
+let progress={};
+
+async function loadData(){
+
+const {data,error}=await supabase
+.from("habit_progress")
+.select("*");
+
+if(data){
+
+data.forEach(item=>{
+
+progress[item.day_number]
+=
+item.completed;
+
+});
+
+}
+
+renderDays();
+
+}
+
+async function saveDay(day,completed){
+
+await supabase
+.from("habit_progress")
+.upsert({
+
+day_number:day,
+completed:completed
+
+});
+
+}
+
+function renderDays(){
+
+let html="";
+
+let completedCount=0;
+
+for(let i=1;i<=TOTAL_DAYS;i++){
+
+if(progress[i])
+completedCount++;
+
+html+=`
+
+<button onclick=
+"toggle(${i})">
+
+Day ${i}
+
+${progress[i]
+?
+'✅'
+:
+'⬜'}
+
+</button>
+
+`;
+
+}
+
+document.getElementById(
+"days"
+).innerHTML=html;
+
+document.getElementById(
+"count"
+).innerHTML=
+
+`Completed:
+${completedCount}
+/180`;
+
+}
+
+async function toggle(day){
+
+progress[day]
+=
+!progress[day];
+
+await saveDay(
+day,
+progress[day]
+);
+
+renderDays();
+
+}
+
+loadData();
+
+</script>
+
+</body>
+</html>
