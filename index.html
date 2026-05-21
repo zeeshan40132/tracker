@@ -1,33 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<title>180 Day Journey</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<style>
+body{
+background:#0f172a;
+color:white;
+font-family:Arial,sans-serif;
+padding:30px;
+}
+
+.month{
+margin-bottom:30px;
+}
+
+.month-title{
+font-size:30px;
+margin-bottom:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+gap:10px;
+}
+
+.card{
+background:#1e293b;
+padding:15px;
+border-radius:15px;
+cursor:pointer;
+text-align:center;
+}
+
+.done{
+background:#16a34a;
+}
+
+.stats{
+font-size:25px;
+margin-bottom:30px;
+}
+</style>
 
 </head>
 
 <body>
 
-<h1>180 Day Journey</h1>
+<h1>✨ 180 Day Journey ✨</h1>
 
-<div id="count">
+<div class="stats" id="stats">
 Completed: 0/180
 </div>
 
-<div id="days"></div>
+<div id="calendar"></div>
 
 <script>
 
-const TOTAL_DAYS=180;
-
-const supabase=
-window.supabase.createClient(
-
+const supabase = window.supabase.createClient(
 "https://awvasbfxppalxqrnryad.supabase.co",
 "sb_publishable_Hg8Z9sY2g6cZI0-UlvQQDA_bv1iVw4p"
-
 );
+
+const TOTAL_DAYS=180;
+const startDate=new Date(2026,4,21);
 
 let progress={};
 
@@ -37,7 +77,10 @@ const {data,error}=await supabase
 .from("habit_progress")
 .select("*");
 
-if(data){
+if(error){
+console.log(error);
+return;
+}
 
 data.forEach(item=>{
 
@@ -47,73 +90,120 @@ item.completed;
 
 });
 
-}
-
-renderDays();
+render();
 
 }
 
-async function saveDay(day,completed){
+async function saveDay(day,status){
 
 await supabase
 .from("habit_progress")
 .upsert({
 
 day_number:day,
-completed:completed
+completed:status
 
 });
 
 }
 
-function renderDays(){
+function render(){
 
-let html="";
+let completed=0;
 
-let completedCount=0;
+let calendar=
+document.getElementById(
+"calendar"
+);
+
+calendar.innerHTML="";
+
+let months={};
 
 for(let i=1;i<=TOTAL_DAYS;i++){
 
+let d=new Date(startDate);
+
+d.setDate(
+startDate.getDate()+i-1
+);
+
+let month=
+d.toLocaleString(
+'default',
+{
+month:'long',
+year:'numeric'
+});
+
+if(!months[month])
+months[month]=[];
+
+months[month].push({
+day:i,
+date:d
+});
+
 if(progress[i])
-completedCount++;
-
-html+=`
-
-<button onclick=
-"toggle(${i})">
-
-Day ${i}
-
-${progress[i]
-?
-'✅'
-:
-'⬜'}
-
-</button>
-
-`;
+completed++;
 
 }
 
 document.getElementById(
-"days"
-).innerHTML=html;
+"stats"
+).innerText=
+`Completed: ${completed}/180`;
 
-document.getElementById(
-"count"
-).innerHTML=
+for(let month in months){
 
-`Completed:
-${completedCount}
-/180`;
+let div=
+document.createElement(
+"div"
+);
+
+div.className=
+"month";
+
+let html=
+`<div class='month-title'>
+${month}
+</div>
+
+<div class='grid'>`;
+
+months[month]
+.forEach(item=>{
+
+html+=`
+
+<div
+class='card
+${progress[item.day]?'done':''}'
+onclick='toggle(${item.day})'>
+
+Day ${item.day}
+<br>
+${item.date.toLocaleDateString()}
+
+</div>
+
+`;
+
+});
+
+html+="</div>";
+
+div.innerHTML=html;
+
+calendar.appendChild(div);
+
+}
 
 }
 
 async function toggle(day){
 
-progress[day]
-=
+progress[day]=
 !progress[day];
 
 await saveDay(
@@ -121,7 +211,7 @@ day,
 progress[day]
 );
 
-renderDays();
+render();
 
 }
 
