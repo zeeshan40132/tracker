@@ -1,91 +1,371 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
 <title>180 Day Journey</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-background:#0f172a;
-color:white;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 font-family:Arial,sans-serif;
+}
+
+body{
+background:linear-gradient(
+135deg,
+#020617,
+#0f172a
+);
+
+color:white;
 padding:30px;
+min-height:100vh;
 }
 
-.month{
-margin-bottom:30px;
+.container{
+max-width:1300px;
+margin:auto;
 }
 
-.month-title{
-font-size:30px;
-margin-bottom:20px;
-}
+.header{
 
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
-gap:10px;
-}
-
-.card{
-background:#1e293b;
-padding:15px;
-border-radius:15px;
-cursor:pointer;
 text-align:center;
+margin-bottom:40px;
+
 }
 
-.done{
-background:#16a34a;
+.header h1{
+
+font-size:45px;
+margin-bottom:10px;
+
+}
+
+.header p{
+
+opacity:0.7;
+
 }
 
 .stats{
-font-size:25px;
+
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
 margin-bottom:30px;
+
 }
+
+.stat{
+
+background:rgba(255,255,255,.08);
+
+padding:25px;
+
+width:220px;
+
+border-radius:20px;
+
+backdrop-filter:blur(10px);
+
+text-align:center;
+
+box-shadow:
+0 5px 20px rgba(
+0,0,0,.3
+);
+
+}
+
+.number{
+
+font-size:35px;
+font-weight:bold;
+margin-top:10px;
+
+}
+
+.progressContainer{
+
+height:20px;
+background:#1e293b;
+border-radius:20px;
+overflow:hidden;
+margin-bottom:50px;
+
+}
+
+.progressBar{
+
+height:100%;
+width:0%;
+border-radius:20px;
+
+background:
+linear-gradient(
+90deg,
+#22c55e,
+#4ade80
+);
+
+transition:1s;
+
+}
+
+.month{
+
+margin-bottom:40px;
+
+}
+
+.monthTitle{
+
+font-size:28px;
+margin-bottom:20px;
+border-bottom:
+1px solid rgba(
+255,255,255,.2
+);
+
+padding-bottom:10px;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:
+repeat(
+auto-fill,
+minmax(
+120px,
+1fr
+)
+);
+
+gap:15px;
+
+}
+
+.card{
+
+background:rgba(
+255,255,255,.08
+);
+
+padding:15px;
+
+border-radius:15px;
+
+text-align:center;
+
+cursor:pointer;
+
+transition:.3s;
+
+backdrop-filter:
+blur(10px);
+
+}
+
+.card:hover{
+
+transform:
+translateY(-5px);
+
+}
+
+.card.completed{
+
+background:
+linear-gradient(
+135deg,
+#16a34a,
+#22c55e
+);
+
+}
+
+.day{
+
+font-size:18px;
+font-weight:bold;
+margin-bottom:8px;
+
+}
+
+.date{
+
+font-size:12px;
+opacity:.7;
+
+}
+
+.status{
+
+margin-top:10px;
+font-size:13px;
+font-weight:bold;
+
+}
+
 </style>
 
 </head>
 
 <body>
 
+<div class="container">
+
+<div class="header">
+
 <h1>✨ 180 Day Journey ✨</h1>
 
-<div class="stats" id="stats">
-Completed: 0/180
+<p>
+Starting from
+21 May 2026
+</p>
+
 </div>
 
-<div id="calendar"></div>
+
+<div class="stats">
+
+<div class="stat">
+
+Completed
+
+<div
+class="number"
+id="completed">
+
+0
+
+</div>
+
+</div>
+
+
+<div class="stat">
+
+Remaining
+
+<div
+class="number"
+id="remaining">
+
+180
+
+</div>
+
+</div>
+
+
+<div class="stat">
+
+Progress
+
+<div
+class="number"
+id="percent">
+
+0%
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="progressContainer">
+
+<div
+class="progressBar"
+id="progressBar">
+</div>
+
+</div>
+
+
+<div
+id="calendar">
+</div>
+
+</div>
+
 
 <script>
 
-const supabase = window.supabase.createClient(
+const {createClient}=supabase;
+
+const supabaseClient=
+createClient(
+
 "https://awvasbfxppalxqrnryad.supabase.co",
+
 "sb_publishable_Hg8Z9sY2g6cZI0-UlvQQDA_bv1iVw4p"
+
 );
 
+
 const TOTAL_DAYS=180;
-const startDate=new Date(2026,4,21);
+
+const startDate=
+new Date(
+2026,
+4,
+21
+);
 
 let progress={};
 
+
+
 async function loadData(){
 
-const {data,error}=await supabase
-.from("habit_progress")
+const {
+data,
+error
+}
+
+=
+await supabaseClient
+
+.from(
+"habit_progress"
+)
+
 .select("*");
 
 if(error){
-console.log(error);
+
+console.log(
+error
+);
+
 return;
+
 }
 
 data.forEach(item=>{
 
-progress[item.day_number]
+progress[
+item.day_number
+]
+
 =
+
 item.completed;
 
 });
@@ -94,96 +374,267 @@ render();
 
 }
 
-async function saveDay(day,status){
 
-await supabase
-.from("habit_progress")
+
+async function saveDay(
+day,
+completed
+){
+
+await supabaseClient
+
+.from(
+"habit_progress"
+)
+
 .upsert({
 
-day_number:day,
-completed:status
+day_number:
+day,
+
+completed:
+completed
 
 });
 
 }
+
+
 
 function render(){
 
-let completed=0;
-
-let calendar=
-document.getElementById(
-"calendar"
-);
-
-calendar.innerHTML="";
+let completedCount=0;
 
 let months={};
 
-for(let i=1;i<=TOTAL_DAYS;i++){
+for(
+let i=1;
+i<=TOTAL_DAYS;
+i++
+){
 
-let d=new Date(startDate);
-
-d.setDate(
-startDate.getDate()+i-1
+let d=
+new Date(
+startDate
 );
 
+d.setDate(
+
+startDate.getDate()
+
++i-1
+
+);
+
+
 let month=
+
 d.toLocaleString(
+
 'default',
+
 {
-month:'long',
-year:'numeric'
-});
 
-if(!months[month])
-months[month]=[];
+month:
+'long',
 
-months[month].push({
-day:i,
-date:d
-});
-
-if(progress[i])
-completed++;
+year:
+'numeric'
 
 }
 
-document.getElementById(
-"stats"
-).innerText=
-`Completed: ${completed}/180`;
-
-for(let month in months){
-
-let div=
-document.createElement(
-"div"
 );
 
-div.className=
-"month";
 
-let html=
-`<div class='month-title'>
-${month}
-</div>
+if(
+!months[month]
+){
 
-<div class='grid'>`;
+months[month]=[];
+
+}
+
 
 months[month]
-.forEach(item=>{
+
+.push({
+
+day:i,
+
+date:d
+
+});
+
+
+if(
+progress[i]
+)
+completedCount++;
+
+}
+
+
+let remaining=
+
+TOTAL_DAYS
+-
+completedCount;
+
+
+let percent=
+
+Math.round(
+
+(
+completedCount
+/
+TOTAL_DAYS
+)
+
+*
+100
+
+);
+
+
+document
+.getElementById(
+"completed"
+)
+
+.innerText=
+
+completedCount;
+
+
+document
+.getElementById(
+"remaining"
+)
+
+.innerText=
+
+remaining;
+
+
+document
+.getElementById(
+"percent"
+)
+
+.innerText=
+
+percent+"%";
+
+
+document
+.getElementById(
+"progressBar"
+)
+
+.style.width=
+
+percent+"%";
+
+
+let html="";
+
+
+for(
+let month
+in months
+){
 
 html+=`
 
 <div
-class='card
-${progress[item.day]?'done':''}'
-onclick='toggle(${item.day})'>
+class="month">
 
-Day ${item.day}
-<br>
+<div
+class="monthTitle">
+
+${month}
+
+</div>
+
+<div
+class="grid">
+
+`;
+
+
+months[month]
+
+.forEach(
+item=>{
+
+html+=`
+
+<div
+
+class=
+
+"card
+
+${
+progress[
+item.day
+]
+
+?
+
+'completed'
+
+:
+
+''
+
+}"
+
+onclick=
+"toggle(
+
+${item.day}
+
+)"
+
+>
+
+<div
+class="day">
+
+Day
+
+${item.day}
+
+</div>
+
+<div
+class="date">
+
 ${item.date.toLocaleDateString()}
+
+</div>
+
+<div
+class="status">
+
+${
+progress[
+item.day
+]
+
+?
+
+'✓ Done'
+
+:
+
+'Pending'
+
+}
+
+</div>
 
 </div>
 
@@ -191,29 +642,58 @@ ${item.date.toLocaleDateString()}
 
 });
 
-html+="</div>";
+html+=`
 
-div.innerHTML=html;
+</div>
 
-calendar.appendChild(div);
+</div>
+
+`;
 
 }
 
+
+document
+.getElementById(
+"calendar"
+)
+
+.innerHTML=
+
+html;
+
 }
 
-async function toggle(day){
 
-progress[day]=
-!progress[day];
+
+async function toggle(
+day
+){
+
+progress[day]
+
+=
+
+!progress[
+day
+];
+
 
 await saveDay(
+
 day,
-progress[day]
+
+progress[
+day
+]
+
 );
+
 
 render();
 
 }
+
 
 loadData();
 
